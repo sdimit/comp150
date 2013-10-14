@@ -417,7 +417,6 @@
         <!--Navigation Controller-->
         <scene sceneID="pak-0C-zaZ">
             <objects>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="9je-PV-weQ" userLabel="First Responder" sceneMemberID="firstResponder"/>
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="hxg-x6-pNp" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="6xe-st-nl8">
@@ -429,13 +428,12 @@
                         <segue destination="p8h-Ht-Nhu" kind="relationship" relationship="rootViewController" id="Ndy-z3-RJ5"/>
                     </connections>
                 </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="9je-PV-weQ" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="1100" y="243"/>
         </scene>
     </scenes>
     <resources>
-        <image name="Contacts.png" width="25" height="25"/>
-        <image name="Contacts.png" width="25" height="25"/>
         <image name="Contacts.png" width="25" height="25"/>
         <image name="Mail.png" width="21" height="15"/>
         <image name="Phone.png" width="22" height="22"/>
