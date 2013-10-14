@@ -94,7 +94,15 @@
 }
 */
 
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (indexPath.row == 1 && indexPath.section == 1){
+        id a = [self masterViewController];
+        [a setLoggedin:NO];
+        [self dismiss];
+    }
+}
 /*
+ 
 #pragma mark - Navigation
 
 // In a story board-based application, you will often want to do a little preparation before navigation

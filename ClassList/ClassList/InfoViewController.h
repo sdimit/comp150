@@ -7,7 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "MasterViewController.h"
 
 @interface InfoViewController : UITableViewController
-
+@property (nonatomic, weak) MasterViewController *masterViewController;
 @end

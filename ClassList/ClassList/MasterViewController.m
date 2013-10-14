@@ -7,14 +7,15 @@
 //
 
 #import "MasterViewController.h"
-
+#import "InfoViewController.h"
 #import "DetailViewController.h"
 
 @interface MasterViewController () {
+    CGPoint navDockPosition;
+    NSInteger lastScrollOffset;
     NSMutableArray *_objectsStore;
     NSMutableArray *_filteredStore;
     NSMutableArray *_searchResults;
-    BOOL loggedin;
 }
 @end
 
@@ -22,7 +23,10 @@
 
 - (void)awakeFromNib
 {
-    loggedin = NO;
+//    loggedin = NO;
+    lastScrollOffset = 0;
+    navDockPosition = self.navigationController.navigationBar.layer.position;
+    [self setLoggedin:YES];
     _objectsStore =  [[NSMutableArray alloc] init];
     _filteredStore = [_objectsStore mutableCopy];
     _searchResults = [NSMutableArray array];
@@ -30,12 +34,9 @@
     [super awakeFromNib];
 }
 
--(void)application:didFinishLaunching{
-
-}
 
 - (void)viewDidAppear:(BOOL)animated{
-    if (loggedin == YES){
+    if ([self loggedin] == YES){
     NSArray *names = [@[@"Jeanmarie Reiser",
                         @"Willy Ryman",
                         @"Otelia Scales",
@@ -70,8 +71,8 @@
     [self.tableView reloadData];
     }
     else {
-        [self performSegueWithIdentifier:@"showLogin" sender:self];
-        loggedin = YES;
+        [self dismissViewControllerAnimated:YES completion:nil];
+        [self setLoggedin:YES];
     }
 }
 
@@ -80,21 +81,20 @@
 
 - (void)viewDidLoad
 {
+    
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
-//    self.navigationItem.leftBarButtonItem = self.editButtonItem;
 
     UIButton* myInfoButton = [UIButton buttonWithType:UIButtonTypeInfoLight];
     [myInfoButton addTarget:self action:@selector(showInfoView) forControlEvents:UIControlEventTouchUpInside];
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:myInfoButton];
-    
-    
+
     UIBarButtonItem *addButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(insertNewObject:)];
     self.navigationItem.rightBarButtonItem = addButton;
     UISegmentedControl *segmentedControl = (UISegmentedControl*) self.navigationItem.titleView;
     [segmentedControl addTarget: self action: @selector(onSegmentedControlChanged:) forControlEvents: UIControlEventValueChanged];
 //    self.navigationItem.titleView = segmentedControl;
-    [self.tableView setContentOffset:CGPointMake(0, self.searchDisplayController.searchBar.frame.size.height)];
+ //   [self.tableView setContentOffset:CGPointMake(0, self.searchDisplayController.searchBar.frame.size.height)];
 }
 
 
@@ -137,26 +137,39 @@
        // [self.tableView scrollToRowAtIndexPath:topIndexPath /atScrollPosition:UITableViewScrollPositionTop animated:NO];
     //}
 }
-
-- (void)insertNewObject:(id)sender
-{
-   // [self.tableView setContentOffset:CGPointMake(0,-22) animated:YES];
-
-    if (!_objectsStore) {
-        _objectsStore = [[NSMutableArray alloc] init];
-    }
-    [_objectsStore insertObject:@[[[NSDate date] description], @"YES"] atIndex:0];
-    
-    [_filteredStore insertObject:@[[[NSDate date] description], @"YES"] atIndex:0];
-    
-//    [self.tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:0] atScrollPosition:UITableViewScrollPositionTop animated:YES];
-
-    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
-  //  [self.tableView scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionTop animated:YES];
-    [self.tableView insertRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-    [self.tableView setContentOffset:CGPointMake(0,-22) animated:YES];
-    
+/*
+- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView {
+    NSLog(@"%f %ld",scrollView.contentOffset.y, (long)lastScrollOffset);
+    if (scrollView.contentOffset.y <= -20)
+        [self.navigationController setNavigationBarHidden:NO animated:YES];
+   // if (scrollView.contentOffset.y > lastScrollOffset || lastScrollOffset <= 0){
+     //   [self.navigationController setNavigationBarHidden:YES animated:YES];
+    //} else {
+      //  [self.navigationController setNavigationBarHidden:NO animated:YES];
+    //}
 }
+- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate {
+    NSLog(@"%f %ld",scrollView.contentOffset.y, (long)lastScrollOffset);
+
+    if (scrollView.contentOffset.y > -64)
+        [self.navigationController setNavigationBarHidden:YES animated:YES];
+    else
+        [self.navigationController setNavigationBarHidden:NO animated:YES];
+    
+    if (scrollView.contentOffset.y <= -20)
+        [self.navigationController setNavigationBarHidden:NO animated:YES];
+//    lastScrollOffset = scrollView.contentOffset.y;
+}
+
+- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView{
+    NSLog(@"%f %ld",scrollView.contentOffset.y, (long)lastScrollOffset);
+
+    if (scrollView.contentOffset.y > -64)
+        [self.navigationController setNavigationBarHidden:YES animated:YES];
+    else
+        [self.navigationController setNavigationBarHidden:NO animated:YES];
+    
+} */
 
 #pragma mark - Table View
 
@@ -192,7 +205,6 @@
          object = _filteredStore[indexPath.row];
     }
     cell.textLabel.text = [object firstObject];
-//    cell.tag = indexPath.row;
     return cell;
 }
 
@@ -234,9 +246,6 @@
     if ([[segue identifier] isEqualToString:@"showDetail"]) {
         
         NSArray *object;
-      //  UIView *a = [sender superview];
-      //  UIView *aaa = [[sender superview] superview];
-      //  UIView * bbb = self.searchDisplayController.searchResultsTableView;
         if ([[sender superview] superview] == self.searchDisplayController.searchResultsTableView)
         {
             NSIndexPath *indexPath = [self.searchDisplayController.searchResultsTableView indexPathForSelectedRow];
@@ -249,14 +258,9 @@
         }
         [[segue destinationViewController] setDetailItem:object];
     }
-    
-    
-    
-    if ([segue.identifier isEqualToString:@"AddPlayer"])
-    {
-   //     UIViewController *loginViewController = (UIViewController *) [segue destinationViewController];
-        //loginViewController.
-     //   loginViewController = self;
+    else if ([[segue identifier] isEqualToString:@"showInfo"]) {
+        InfoViewController* infoViewConroller = (InfoViewController*)[[segue destinationViewController] topViewController];
+        [infoViewConroller setMasterViewController:self];
     }
     
 }

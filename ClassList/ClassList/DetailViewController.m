@@ -30,18 +30,77 @@
 
 - (void)configureView
 {
+    
+    self.navigationController.navigationBarHidden = NO;
+
     // Update the user interface for the detail item.
 
     if (self.detailItem) {
-//        self.detailDescriptionLabel.text = ;
         self.title = [self.detailItem firstObject];
-        if ([[self.detailItem objectAtIndex:1]  isEqual: @"S"]) self.typeLabel.text = @"Student";
+        if ([[self.detailItem objectAtIndex:1]  isEqual: @"NO"]) self.typeLabel.text = @"Student";
         else self.typeLabel.text = @"Teacher";
-        self.phoneButtonCell.textLabel.text = [NSString stringWithFormat:@"(%ld) %ld-%ld",
-                                            random()%1000, random()%1000, random()%1000];
-    //    self.emailCell.textLabel.text = [NSString stringWithFormat:@"%@@%@", [self.title stringByReplacingOccurrencesOfString:@" " withString:@"."], @"email.com"];
-        
+        [self.phoneButtonCell.textLabel setText:
+        [NSString stringWithFormat:@"(%ld) %ld-%ld", random()%1000, random()%1000, random()%1000]];
+        [self.emailButtonCell.textLabel setText:[NSString stringWithFormat:@"%@@%@", [self.title stringByReplacingOccurrencesOfString:@" " withString:@"."], @"email.com"]];
+        self.navigationItem.rightBarButtonItem = self.editButtonItem;
     }
+ //   self.tableView.scrollEnabled = NO;
+ //   [self tableView:self.tableView insertRowsAtIndexPaths:withRowAnimation:];
+    
+}
+
+-(NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section{
+    if (self.editing) return @"";
+    if (section == 2 && !self.editing){
+        if ([[self.detailItem objectAtIndex:1]  isEqual: @"NO"]) return @"Student";
+        else return @"Teacher";
+    }
+    return [super tableView:tableView titleForHeaderInSection:section];
+}
+
+- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    if (indexPath.section == 2 || indexPath.section == 0) return YES;
+    return NO;
+}
+
+- (void)setEditing:(BOOL)editing animated:(BOOL)animate
+{
+//    [UIView transitionWithView:self.tableView duration:0.3 options:UIViewAnimationOptionTransitionCrossDissolve animations:NULL completion:NULL];
+    
+    [super setEditing:editing animated:animate];
+    
+    
+    NSIndexPath *indexPath0 = [NSIndexPath indexPathForRow:0 inSection:0];
+    NSIndexPath *indexPath1 = [NSIndexPath indexPathForRow:0 inSection:1];
+    NSIndexPath *indexPath3 = [NSIndexPath indexPathForRow:0 inSection:3];
+    
+    if(editing)
+    {
+        [self.tableView insertRowsAtIndexPaths:@[indexPath0, indexPath1, indexPath3] withRowAnimation:UITableViewRowAnimationMiddle];
+    }
+    else
+    {
+        [self.tableView deleteRowsAtIndexPaths:@[indexPath0, indexPath1, indexPath3] withRowAnimation:UITableViewRowAnimationMiddle];
+    }
+
+    [self.tableView reloadData];
+}
+//
+//
+//- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+//{
+//    UITableViewCell *cell = [super tableView:tableView cellForRowAtIndexPath:indexPath];
+//    if indexPath
+//    return cell;
+//}
+//
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    //... code regarding other sections goes here
+    
+    if (section != 2 && !self.editing) return 0;
+    return [super tableView:tableView numberOfRowsInSection:section];
 }
 
 - (void) tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath       *)indexPath
