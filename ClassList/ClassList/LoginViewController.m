@@ -28,11 +28,16 @@
 {
     [super viewDidLoad];
     
-    [self.loginButton addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
-    [self.loginField becomeFirstResponder];
+    [self.loginButton addTarget:self action:@selector(login) forControlEvents:UIControlEventTouchUpInside];
 	// Do any additional setup after loading the view.
     [self.loginField setReturnKeyType:UIReturnKeyNext];
     [self.passwordField setReturnKeyType:UIReturnKeyDone];
+}
+
+-(void)viewDidAppear:(BOOL)animated{
+    
+    [self.loginField becomeFirstResponder];
+
 }
 
 - (BOOL)textFieldShouldReturn:(UITextField *)theTextField {
@@ -45,30 +50,34 @@
     return YES;
 }
 
-- (void) dismiss{
+- (void) login{
     
-    [self dismissViewControllerAnimated:YES completion:nil];
+    [self performSegueWithIdentifier:@"showMain" sender:self];
 
 }
 
 - (void) validate{
     if (![self.loginField hasText]){
         [self.loginField becomeFirstResponder];
-    [UIView animateWithDuration:0.1 animations:^{
-      //  [self.loginField setBackgroundColor:
-        //    [UIColor colorWithRed:255/255.0f green:127/255.0f blue:127/255.0f alpha:1.0f]];
-        self.loginField.transform = CGAffineTransformMakeTranslation(5, 0);
-        self.loginField.transform = CGAffineTransformIdentity;
-    } completion:^(BOOL finished) {
-                    [UIView animateWithDuration:0.1 animations:^{
-              //          self.loginField.backgroundColor = [UIColor clearColor];
-                        self.loginField.transform = CGAffineTransformMakeTranslation(-5, 0);
-                        self.loginField.transform = CGAffineTransformIdentity;
-                    }
-                                     completion:nil];
-        }];
+        [self shakeView];
     }
     
+}
+
+- (void)shakeView{
+    
+    void(^shakeEffectIn)(void) = ^{
+        [self.loginField setTransform:CGAffineTransformMakeTranslation(5, 0)];
+        [self.loginField setTransform:CGAffineTransformIdentity];
+    };
+    void(^shakeEffectOut)(void) = ^{
+        [self.loginField setTransform:CGAffineTransformMakeTranslation(-5, 0)];
+        [self.loginField setTransform:CGAffineTransformIdentity];
+    };
+    
+    [UIView animateWithDuration:0.1 animations:shakeEffectIn completion:^(BOOL finished) {
+        [UIView animateWithDuration:0.1 animations:shakeEffectOut];
+    }];
 }
 
 - (void)didReceiveMemoryWarning

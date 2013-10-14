@@ -15,6 +15,6 @@
 @property (weak, nonatomic) IBOutlet UITableViewCell *emailButtonCell;
 @property (weak, nonatomic) IBOutlet UILabel *typeLabel;
 @property (weak, nonatomic) IBOutlet UIImageView *photoView;
-
-@property (weak, nonatomic) IBOutlet UILabel *detailDescriptionLabel;
+@property (weak, nonatomic) IBOutlet UITableViewCell *typeCell;
+@property (weak, nonatomic) IBOutlet UITableViewCell *deleteCell;
 @end
