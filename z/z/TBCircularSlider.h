@@ -16,8 +16,9 @@
 #define TB_FONTFAMILY @"HelveticaNeue-UltraLight"  //The font family of the textfield font
 
 @interface TBCircularSlider : UIControl
-@property (nonatomic,assign) int angle;
-@property (nonatomic,assign) int curTimeAngle;
+@property (nonatomic,assign) float angle;
+@property (nonatomic,assign) float secondaryAngle;
+@property (nonatomic,assign) float curTimeAngle;
 @property (nonatomic,assign) NSMutableArray* times;
 @property (nonatomic,assign) UITableView* table;
 

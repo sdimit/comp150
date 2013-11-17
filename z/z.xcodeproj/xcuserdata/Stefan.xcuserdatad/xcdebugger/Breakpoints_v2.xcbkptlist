@@ -6,16 +6,16 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "z/TBCircularSlider.m"
-            timestampString = "406327142.5825"
+            timestampString = "406396720.15485"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "143"
-            endingLineNumber = "143"
-            landmarkName = "-drawRect:"
+            startingLineNumber = "414"
+            endingLineNumber = "414"
+            landmarkName = "-moveSecondaryDial:"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
