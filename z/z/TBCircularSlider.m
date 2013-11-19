@@ -199,13 +199,6 @@
     CGContextSetBlendMode(ctx, kCGBlendModeDifference);
 
     [self drawTheHandle:ctx];
-   // NSLog(@"%f", ToDeg(ToRad(self.curTimeAngle)));
-   // CGContextAddArc(ctx, self.frame.size.width/2, self.frame.size.height/2, radius, ToRad(self.curTimeAngle - 90),
-        //            ToRad(self.curTimeAngle + 1 - 90), 0);
-
-    //Set the stroke color to black
-   // [[UIColor blueColor]setStroke];
-   // [[UIColor whiteColor]setStroke];
 
     //Define line width and cap
     CGContextSetLineWidth(ctx, 3);//-20);
@@ -216,78 +209,6 @@
     CGContextDrawPath(ctx, kCGPathStroke);
 
    
-//** Draw the circle (using a clipped gradient) **/
-
-   /**
-    //** Create THE MASK Image
-    UIGraphicsBeginImageContext(CGSizeMake(TB_SLIDER_SIZE,TB_SLIDER_SIZE));
-    CGContextRef imageCtx = UIGraphicsGetCurrentContext();
-    
-    CGContextAddArc(imageCtx, self.frame.size.width/2  , self.frame.size.height/2, radius, 0, ToRad(self.angle), 0);
-    [[UIColor redColor]set];
-    
-    //Use shadow to create the Blur effect
-   // CGContextSetShadowWithColor(imageCtx, CGSizeMake(0, 0), self.angle/20, [UIColor blackColor].CGColor);
-    
-    //define the path
-    CGContextSetLineWidth(imageCtx, TB_LINE_WIDTH);
-    CGContextDrawPath(imageCtx, kCGPathStroke);
-    
-    //save the context content into the image mask
-    CGImageRef mask = CGBitmapContextCreateImage(UIGraphicsGetCurrentContext());
-    UIGraphicsEndImageContext();
-    
-    
-
-    //** Clip Context to the mask
-    CGContextSaveGState(ctx);
-    
-    CGContextClipToMask(ctx, self.bounds, mask);
-    CGImageRelease(mask);
-    
-    
-    CGContextRestoreGState(ctx);
-**/
-    /** THE GRADIENT
-    
-    //list of components
-    CGFloat components[8] = {
-        0.0, 0.0, 1.0, 1.0,     // Start color - Blue
-        1.0, 0.0, 1.0, 1.0 };   // End color - Violet
-    
-    CGColorSpaceRef baseSpace = CGColorSpaceCreateDeviceRGB();
-    CGGradientRef gradient = CGGradientCreateWithColorComponents(baseSpace, components, NULL, 2);
-    CGColorSpaceRelease(baseSpace), baseSpace = NULL;
-    
-    //Gradient direction
-    CGPoint startPoint = CGPointMake(CGRectGetMidX(rect), CGRectGetMinY(rect));
-    CGPoint endPoint = CGPointMake(CGRectGetMidX(rect), CGRectGetMaxY(rect));
-    
-    //Draw the gradient
-    CGContextDrawLinearGradient(ctx, gradient, startPoint, endPoint, 0);
-    CGGradientRelease(gradient), gradient = NULL;
-    
-    **/
-
-    /** Add some light reflection effects on the background circle     **/
-
- /**
-    CGContextSetLineWidth(ctx, 3);
-    CGContextSetLineCap(ctx, kCGLineCapRound);
-    
-    //Draw the outside light
-    CGContextBeginPath(ctx);
-    CGContextAddArc(ctx, self.frame.size.width/2  , self.frame.size.height/2, radius+4, 0, ToRad(-self.angle), 1);
-    [[UIColor colorWithWhite:1.0 alpha:0.05]set];
-    CGContextDrawPath(ctx, kCGPathStroke);
-    
-    //draw the inner light
-    CGContextBeginPath(ctx);
-    CGContextAddArc(ctx, self.frame.size.width/2  , self.frame.size.height/2, radius-TB_BACKGROUND_WIDTH/2, 0, ToRad(-self.angle), 1);
-    [[UIColor colorWithWhite:1.0 alpha:0.05]set];
-    CGContextDrawPath(ctx, kCGPathStroke);
-
- Draw the handle **/
 }
 
 static inline float timeToAngle (int h, int m){
@@ -309,7 +230,16 @@ static inline float timeToAngle (int h, int m){
 -(void) drawTheHandle:(CGContextRef)ctx{
     
     CGContextSaveGState(ctx);
-    
+
+    if (radius <130&& self.curTimeAngle > self.angle){
+        radius++;
+        double delayInSeconds = 0.1;
+        dispatch_time_t popTime =
+        dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+            [self performSelector:@selector(setNeedsDisplay) withObject:nil];
+        });
+    }
     //I Love shadows
   //  CGContextSetShadowWithColor(ctx, CGSizeMake(0, 0), 3, [UIColor blackColor].CGColor);
     
@@ -388,6 +318,7 @@ static inline float timeToAngle (int h, int m){
 
     CGContextRestoreGState(ctx);
 
+    [self setNeedsDisplay];
 }
 
 
@@ -398,13 +329,13 @@ static inline float timeToAngle (int h, int m){
     BOOL isClockwise = NO, hasTransitioned = NO;
     //Get the center
     CGPoint centerPoint = CGPointMake(self.frame.size.width/2, self.frame.size.height/2);
-    
+    int animt = 10;
     //Calculate the direction from a center point and a arbitrary position.
     float delta = AngleFromNorth(centerPoint, lastPoint, YES);
     if (delta > self.angle) isClockwise = YES;
     else isClockwise = NO;
     float diff = self.curTimeAngle - self.angle;
-    if (diff > 0 && diff <= 10 && self.curTimeAngle - delta > 10){
+    if (diff > 0 && diff <= animt && self.curTimeAngle - delta > animt){
         // the touch tracking has skipped a transition because we moved fingers fast
         secondaryDialAlpha = 0;
         secondaryRadius = 70;
@@ -426,18 +357,18 @@ static inline float timeToAngle (int h, int m){
     [self setNeedsDisplay];
 
     diff = self.curTimeAngle - self.angle;
-    if(diff <= 10 && diff > 0){
+    if(diff <= animt && diff > 0){
         NSLog(@"curTime %f angle %f diff %f", self.curTimeAngle, self.angle, diff/10);
         NSLog(@"radius %d", radius);
 
         if (isClockwise&& radius!=130){
             NSLog(@"radius %d", radius);
-            secondaryDialAlpha = 1 - diff/10;
+            secondaryDialAlpha = 1 - diff/animt;
             secondaryRadius = secondaryRadius + secondaryDialAlpha*(100 - secondaryRadius);
             radius = radius + secondaryDialAlpha*(130-radius);
         } else if (!isClockwise){
-            secondaryDialAlpha = 1 - diff/10;
-            NSLog(@"radius %d secondary %f", secondaryRadius, (secondaryRadius - 70));
+            secondaryDialAlpha = 1 - diff/animt;
+            NSLog(@"radius %d secondary %d", secondaryRadius, (secondaryRadius - 70));
             secondaryRadius = secondaryRadius - (1 - secondaryDialAlpha)*(secondaryRadius - 70);
             radius = radius - (1 - secondaryDialAlpha)*(radius - 100);
         }
@@ -461,7 +392,7 @@ static inline float timeToAngle (int h, int m){
     handleAngle = self.secondaryAngle;
     //    self.angle = ceil(self.angle/45)*45;
     //Redraw
-    [self setNeedsDisplay];
+    //[self setNeedsDisplay];
 }
 
 /** Given the angle, get the point position on circumference **/
@@ -508,7 +439,6 @@ static inline float timeToAngle (int h, int m){
 }
 
 
-
 //Sourcecode from Apple example clockControl
 //Calculate the direction in degrees from a center point to an arbitrary position.
 static inline float AngleFromNorth(CGPoint p1, CGPoint p2, BOOL flipped) {
@@ -525,5 +455,9 @@ static inline float AngleFromNorth(CGPoint p1, CGPoint p2, BOOL flipped) {
     return result;
 }
 @end
+
+
+
+
 
 
