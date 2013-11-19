@@ -10,11 +10,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "z/TBCircularSlider.m"
-            timestampString = "406553015.588953"
+            timestampString = "406553205.224347"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "446"
-            endingLineNumber = "446"
+            startingLineNumber = "430"
+            endingLineNumber = "430"
             landmarkName = "-movehandle:"
             landmarkType = "5">
          </BreakpointContent>
@@ -26,11 +26,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "z/TBCircularSlider.m"
-            timestampString = "406553015.588953"
+            timestampString = "406553205.224347"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "428"
-            endingLineNumber = "428"
+            startingLineNumber = "412"
+            endingLineNumber = "412"
             landmarkName = "-movehandle:"
             landmarkType = "5">
          </BreakpointContent>
@@ -42,11 +42,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "z/TBCircularSlider.m"
-            timestampString = "406553015.588953"
+            timestampString = "406553205.224347"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "452"
-            endingLineNumber = "452"
+            startingLineNumber = "436"
+            endingLineNumber = "436"
             landmarkName = "-movehandle:"
             landmarkType = "5">
          </BreakpointContent>
@@ -58,11 +58,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "z/TBCircularSlider.m"
-            timestampString = "406553015.588953"
+            timestampString = "406553205.224347"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "450"
-            endingLineNumber = "450"
+            startingLineNumber = "434"
+            endingLineNumber = "434"
             landmarkName = "-movehandle:"
             landmarkType = "5">
          </BreakpointContent>
@@ -74,11 +74,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "z/TBCircularSlider.m"
-            timestampString = "406553015.588953"
+            timestampString = "406553205.224347"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "460"
-            endingLineNumber = "460"
+            startingLineNumber = "444"
+            endingLineNumber = "444"
             landmarkName = "-movehandle:"
             landmarkType = "5">
          </BreakpointContent>

@@ -158,15 +158,8 @@
     //Create the path
     CGContextSetLineCap(ctx, kCGLineCapButt);
 
-    CGContextAddArc(ctx, self.frame.size.width/2, self.frame.size.height/2, radius, ToRad(self.curTimeAngle - 90+3),ToRad(self.curTimeAngle - 90) + ToRad(273), 0);
-
-
-    CGContextAddCurveToPoint(ctx,   [self pointFromAngle:self.curTimeAngle+270+21].x+20,
-                                    [self pointFromAngle:self.curTimeAngle+270+21].y+20,
-                                    [self pointFromAngle:self.curTimeAngle-41].x+20,
-                                    [self pointFromAngle:self.curTimeAngle-41].y+20,
-                                    [self pointFromAngle:self.curTimeAngle].x+20,
-                                    [self pointFromAngle:self.curTimeAngle].y+20-30);
+    CGContextAddArc(ctx, self.frame.size.width/2, self.frame.size.height/2, radius, ToRad(self.curTimeAngle - 90+3),ToRad(self.curTimeAngle - 90) + ToRad(285), 0);
+   // CGContextAddQuadCurveToPoint(ctx,[self pointFromAngle:self.an], self.frame.size.height/2, self.frame.size.width, self.frame.size.height);
     //Set the stroke color to black
     [[UIColor purpleColor]setStroke];
     [[UIColor colorWithWhite:1.0 alpha:mainDialAlpha]setStroke];
@@ -179,11 +172,6 @@
 
     //draw it!
     CGContextDrawPath(ctx, kCGPathStroke);
-
-    [[UIColor clearColor]set];
-    CGContextFillEllipseInRect(ctx, CGRectMake([self pointFromAngle:self.curTimeAngle+270+22.5].x + 20, [self pointFromAngle:self.curTimeAngle+270].y + 20, 10, 10));
-
-    CGContextFillEllipseInRect(ctx, CGRectMake([self pointFromAngle:self.curTimeAngle-22.5].x + 20, [self pointFromAngle:self.curTimeAngle].y + 20, 10, 10));
 
     CGContextSetLineCap(ctx, kCGLineCapButt);
 
@@ -221,11 +209,8 @@
 
     //Define line width and cap
     CGContextSetLineWidth(ctx, 3);//-20);
-    CGContextSetBlendMode(ctx, kCGBlendModeNormal);
-
     CGContextSetLineCap(ctx, kCGLineCapRound);
-    // inner circle drawing
-    CGContextAddArc(ctx, self.frame.size.width/2, self.frame.size.height/2,secondaryRadius, ToRad(270), ToRad(90),1);
+    CGContextAddArc(ctx, self.frame.size.width/2, self.frame.size.height/2,secondaryRadius, ToRad(0), ToRad(360),0);
 
     //draw it!
     CGContextDrawPath(ctx, kCGPathStroke);
@@ -418,9 +403,8 @@ static inline float timeToAngle (int h, int m){
     float delta = AngleFromNorth(centerPoint, lastPoint, YES);
     if (delta > self.angle) isClockwise = YES;
     else isClockwise = NO;
-    int animThreshold = 77;
     float diff = self.curTimeAngle - self.angle;
-    if (diff > 0 && diff <= animThreshold && self.curTimeAngle - delta > animThreshold){
+    if (diff > 0 && diff <= 10 && self.curTimeAngle - delta > 10){
         // the touch tracking has skipped a transition because we moved fingers fast
         secondaryDialAlpha = 0;
         secondaryRadius = 70;
@@ -442,17 +426,17 @@ static inline float timeToAngle (int h, int m){
     [self setNeedsDisplay];
 
     diff = self.curTimeAngle - self.angle;
-    if(diff <= animThreshold && diff > 0){
-        NSLog(@"curTime %f angle %f diff %f", self.curTimeAngle, self.angle, diff/animThreshold);
+    if(diff <= 10 && diff > 0){
+        NSLog(@"curTime %f angle %f diff %f", self.curTimeAngle, self.angle, diff/10);
         NSLog(@"radius %d", radius);
 
         if (isClockwise&& radius!=130){
             NSLog(@"radius %d", radius);
-            secondaryDialAlpha = 1 - diff/animThreshold;
+            secondaryDialAlpha = 1 - diff/10;
             secondaryRadius = secondaryRadius + secondaryDialAlpha*(100 - secondaryRadius);
             radius = radius + secondaryDialAlpha*(130-radius);
         } else if (!isClockwise){
-            secondaryDialAlpha = 1 - diff/animThreshold;
+            secondaryDialAlpha = 1 - diff/10;
             NSLog(@"radius %d secondary %f", secondaryRadius, (secondaryRadius - 70));
             secondaryRadius = secondaryRadius - (1 - secondaryDialAlpha)*(secondaryRadius - 70);
             radius = radius - (1 - secondaryDialAlpha)*(radius - 100);
