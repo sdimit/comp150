@@ -28,7 +28,7 @@
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
 
-    TBCircularSlider *slider = [[TBCircularSlider alloc]initWithFrame:CGRectMake(0, 40, TB_SLIDER_SIZE, TB_SLIDER_SIZE)];
+    TBCircularSlider *slider = [[TBCircularSlider alloc]initWithFrame:CGRectMake(0, 0, TB_SLIDER_SIZE, TB_SLIDER_SIZE)];
     [slider setTimes:times];
     [slider setTable:self.timesTable];
 
@@ -39,7 +39,7 @@
 
     [UIView transitionWithView:self.sliderView
                       duration:1
-                       options:UIViewAnimationOptionTransitionCrossDissolve //any animation
+                       options:UIViewAnimationOptionTransitionCrossDissolve //any
                     animations:^ {
                         [self.sliderView addSubview:slider];
                     }
@@ -94,6 +94,8 @@
         //bgColorView.layer.masksToBounds = YES;
         [cell setSelectedBackgroundView:bgColorView];
 
+    }else{
+        cell.textLabel.text = [times objectAtIndex:indexPath.row];
     }
     // Configure the cell...
 

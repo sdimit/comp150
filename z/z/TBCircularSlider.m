@@ -25,7 +25,6 @@
     UITextField *_curTime;
     int radius;
     int secondaryRadius;
-    float handleradius;
     float handleAngle;
     float mainDialAlpha;
     float secondaryDialAlpha;
@@ -59,9 +58,8 @@
         self.opaque = NO;
         
         //Define the circle radius taking into account the safe area
-        radius =  self.frame.size.width/2 - TB_SAFEAREA_PADDING + 25;
+        radius =  self.frame.size.width/2 - TB_SAFEAREA_PADDING;
         secondaryRadius = 70;
-        handleradius = radius;
         mainDialAlpha = 1.0;
         secondaryDialAlpha = 0;
         //Initialize the Angle at 0
@@ -71,25 +69,25 @@
         //Define the Font
         UIFont *font = [UIFont fontWithName:TB_FONTFAMILY size:17];
         //Calculate font size needed to display 3 numbers
-        NSString *str = @"drag around the dial to pick a wake up time";
+        NSString *str = @"drag dial to set alarm";
         CGSize fontSize = [str sizeWithFont:font];
         
         //Using a TextField area we can easily modify the control to get user input from this field
         _curTime = [[UITextField alloc]initWithFrame:CGRectMake((frame.size.width  - fontSize.width) /2,
-                                                                  (frame.size.height - fontSize.height) /2,
+                                                                  (frame.size.height - fontSize.height*2) /2,
                                                                   fontSize.width,
-                                                                  fontSize.height)];
+                                                                  fontSize.height*2)];
         _curTime.backgroundColor = [UIColor clearColor];
         _curTime.textColor = [UIColor colorWithWhite:1 alpha:0.8];
         _curTime.textAlignment = NSTextAlignmentCenter;
         _curTime.font = font;
-        _curTime.text = @"drag around the dial to pick a wake up time";
+        _curTime.text =@"drag dial to set alarm";
         //_curTime.text =  [NSString stringWithFormat:@"%02d:%02d", 11, 59];
         _curTime.enabled = NO;
 
 
         fontSize = [str sizeWithFont:[UIFont fontWithName:@"HelveticaNeue-Light" size:60]];
-        _textField = [[UITextField alloc]initWithFrame:CGRectMake((frame.size.width  - fontSize.width) /2,
+     /*   _textField = [[UITextField alloc]initWithFrame:CGRectMake((frame.size.width  - fontSize.width) /2,
                                                                   -20,
                                                                   fontSize.width,
                                                                   fontSize.height)];
@@ -100,7 +98,7 @@
         _textField.text =  [NSString stringWithFormat:@"%02d:%02d", h, m];
         _textField.enabled = NO;
         
-        [self addSubview:_textField];
+        [self addSubview:_textField];*/
         [self addSubview:_curTime];
     }
 
@@ -124,35 +122,21 @@
     CGPoint lastPoint = [touch locationInView:self];
     CGPoint centerPoint = CGPointMake(self.frame.size.width/2, self.frame.size.height/2);
     CGPoint v = CGPointMake(lastPoint.x-centerPoint.x,lastPoint.y-centerPoint.y);
-    handleradius = sqrt(SQR(v.x) + SQR(v.y));
-    if (handleradius > radius) handleradius = radius;
-    if (handleradius < secondaryRadius) handleradius = secondaryRadius;
-    if (handleradius < radius) {
-        radius =  150 - (handleradius - secondaryRadius);
 
-//        if (handleradius > 100 && secondaryRadius < 95) secondaryRadius =  (handleradius - secondaryRadius)*3.5;
-    //    else if (secondaryRadius < 95) secondaryRadius = secondaryRadius + (radius - handleradius)/5;
-        mainDialAlpha = 1-(radius - handleradius)/handleradius;
-        secondaryDialAlpha = 1- mainDialAlpha;
-        [self setNeedsDisplay];
-        [self moveSecondaryDial:lastPoint];
-    }
-    if (handleradius == radius) {
         if ([self movehandle:lastPoint])
         {
             [self sendActionsForControlEvents:UIControlEventValueChanged];
             return YES;
         }
-        else return NO;
-    }
-    return YES;
+        return NO;
 }
 
 /** Track is finished **/
 -(void)endTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event{
     [super endTrackingWithTouch:touch withEvent:event];
     [table reloadData];
-    
+    NSIndexSet * sections = [NSIndexSet indexSetWithIndex:0];
+    [table reloadSections:sections withRowAnimation:UITableViewRowAnimationAutomatic];
 }
 
 
@@ -172,8 +156,17 @@
 /** Draw the Background **/
 
     //Create the path
-    CGContextAddArc(ctx, self.frame.size.width/2, self.frame.size.height/2, radius, ToRad(self.curTimeAngle - 89.1),ToRad(self.curTimeAngle - 90) + ToRad(270), 0);
+    CGContextSetLineCap(ctx, kCGLineCapButt);
 
+    CGContextAddArc(ctx, self.frame.size.width/2, self.frame.size.height/2, radius, ToRad(self.curTimeAngle - 90+3),ToRad(self.curTimeAngle - 90) + ToRad(273), 0);
+
+
+    CGContextAddCurveToPoint(ctx,   [self pointFromAngle:self.curTimeAngle+270+21].x+20,
+                                    [self pointFromAngle:self.curTimeAngle+270+21].y+20,
+                                    [self pointFromAngle:self.curTimeAngle-41].x+20,
+                                    [self pointFromAngle:self.curTimeAngle-41].y+20,
+                                    [self pointFromAngle:self.curTimeAngle].x+20,
+                                    [self pointFromAngle:self.curTimeAngle].y+20-30);
     //Set the stroke color to black
     [[UIColor purpleColor]setStroke];
     [[UIColor colorWithWhite:1.0 alpha:mainDialAlpha]setStroke];
@@ -182,13 +175,34 @@
 
     CGContextSetLineWidth(ctx, 3);
 
-    //CGContextSetLineCap(ctx, kCGLineCapButt);
+    CGContextSetLineCap(ctx, kCGLineCapRound);
 
     //draw it!
     CGContextDrawPath(ctx, kCGPathStroke);
 
+    [[UIColor clearColor]set];
+    CGContextFillEllipseInRect(ctx, CGRectMake([self pointFromAngle:self.curTimeAngle+270+22.5].x + 20, [self pointFromAngle:self.curTimeAngle+270].y + 20, 10, 10));
 
-    CGContextAddArc(ctx, self.frame.size.width/2, self.frame.size.height/2, secondaryRadius, ToRad(0),ToRad(360), 0);
+    CGContextFillEllipseInRect(ctx, CGRectMake([self pointFromAngle:self.curTimeAngle-22.5].x + 20, [self pointFromAngle:self.curTimeAngle].y + 20, 10, 10));
+
+    CGContextSetLineCap(ctx, kCGLineCapButt);
+
+    CGContextAddArc(ctx, self.frame.size.width/2, self.frame.size.height/2, radius, ToRad(self.curTimeAngle - 90),ToRad(self.curTimeAngle - 90) + ToRad(3), 0);
+
+    CGContextDrawPath(ctx, kCGPathStroke);
+    
+    CGPoint p = [self pointFromAngle:self.angle];
+    p.y +=9; p.x +=6;
+    p.x += 40*cos(ToRad(self.angle-90)); p.y +=40*sin(ToRad(self.angle-90));
+//    [@"curt" drawAtPoint:p withAttributes:@{NSFontAttributeName: [UIFont systemFontOfSize:16], NSForegroundColorAttributeName:[UIColor greenColor]}];
+
+
+    [@"12" drawAtPoint:[self pointFromAngleAroundDial:0] withAttributes:@{NSFontAttributeName: [UIFont systemFontOfSize:16], NSForegroundColorAttributeName:[UIColor whiteColor]}];
+    [@"3" drawAtPoint:[self pointFromAngleAroundDial:90] withAttributes:@{NSFontAttributeName: [UIFont systemFontOfSize:16], NSForegroundColorAttributeName:[UIColor whiteColor]}];
+    [@"6" drawAtPoint:[self pointFromAngleAroundDial:180] withAttributes:@{NSFontAttributeName: [UIFont systemFontOfSize:16], NSForegroundColorAttributeName:[UIColor whiteColor]}];
+    [@"9" drawAtPoint:[self pointFromAngleAroundDial:270] withAttributes:@{NSFontAttributeName: [UIFont systemFontOfSize:16], NSForegroundColorAttributeName:[UIColor whiteColor]}];
+
+    //CGContextAddArc(ctx, self.frame.size.width/2, self.frame.size.height/2, secondaryRadius, ToRad(0),ToRad(360), 0);
 
     [[UIColor colorWithWhite:1.0 alpha:secondaryDialAlpha]setStroke];
     CGContextSetLineWidth(ctx, 2);
@@ -203,13 +217,15 @@
 
     //Set the stroke color to black
    // [[UIColor blueColor]setStroke];
-    [[UIColor whiteColor]setStroke];
+   // [[UIColor whiteColor]setStroke];
 
     //Define line width and cap
-    CGContextSetLineWidth(ctx, TB_BACKGROUND_WIDTH+50);//-20);
-    CGContextSetLineCap(ctx, kCGLineCapButt);
+    CGContextSetLineWidth(ctx, 3);//-20);
+    CGContextSetBlendMode(ctx, kCGBlendModeNormal);
 
-    //    CGContextSetLineCap(ctx, kCGLineCapRound);
+    CGContextSetLineCap(ctx, kCGLineCapRound);
+    // inner circle drawing
+    CGContextAddArc(ctx, self.frame.size.width/2, self.frame.size.height/2,secondaryRadius, ToRad(270), ToRad(90),1);
 
     //draw it!
     CGContextDrawPath(ctx, kCGPathStroke);
@@ -268,14 +284,15 @@
     
     **/
 
-/** Add some light reflection effects on the background circle
-    
-    CGContextSetLineWidth(ctx, 1);
+    /** Add some light reflection effects on the background circle     **/
+
+ /**
+    CGContextSetLineWidth(ctx, 3);
     CGContextSetLineCap(ctx, kCGLineCapRound);
     
     //Draw the outside light
     CGContextBeginPath(ctx);
-    CGContextAddArc(ctx, self.frame.size.width/2  , self.frame.size.height/2, radius+TB_BACKGROUND_WIDTH/2, 0, ToRad(-self.angle), 1);
+    CGContextAddArc(ctx, self.frame.size.width/2  , self.frame.size.height/2, radius+4, 0, ToRad(-self.angle), 1);
     [[UIColor colorWithWhite:1.0 alpha:0.05]set];
     CGContextDrawPath(ctx, kCGPathStroke);
     
@@ -284,9 +301,8 @@
     CGContextAddArc(ctx, self.frame.size.width/2  , self.frame.size.height/2, radius-TB_BACKGROUND_WIDTH/2, 0, ToRad(-self.angle), 1);
     [[UIColor colorWithWhite:1.0 alpha:0.05]set];
     CGContextDrawPath(ctx, kCGPathStroke);
-    **/
 
-/** Draw the handle **/
+ Draw the handle **/
 }
 
 static inline float timeToAngle (int h, int m){
@@ -313,59 +329,77 @@ static inline float timeToAngle (int h, int m){
   //  CGContextSetShadowWithColor(ctx, CGSizeMake(0, 0), 3, [UIColor blackColor].CGColor);
     
     //Get the handle position
-    CGPoint handleCenter =  [self pointFromAngle: handleAngle];
+    CGPoint hourHandleCenter =  [self pointFromAngleFixedRadius: handleAngle];
+    CGPoint minHandleCenter =  [self pointFromAngle: handleAngle];
+
   //  NSLog(@"handle %d", self.curTimeAngle);
  //   CGPoint curTimeCenter =  [self pointFromAngle: self.curTimeAngle];
+    CGContextSetBlendMode(ctx, kCGBlendModeDifference);
+    CGContextSetLineWidth(ctx, radius-3);//-20);
+    [[UIColor whiteColor]setStroke];
+  //  CGContextAddArc(ctx, self.frame.size.width/2, self.frame.size.height/2, radius/2, ToRad(self.curTimeAngle-90),ToRad(self.angle-90), 0);
 
-//    CGContextSetBlendMode(ctx, kCGBlendModeDifference);
-    CGContextSetLineWidth(ctx, TB_BACKGROUND_WIDTH-30);//-20);
-    int angleDifference = -(self.curTimeAngle - self.angle);
-    int numCycles;
-    //if (angleDifference >= 0)
-        //angleDifference = ((self.curTimeAngle - self.angle)) ;
-    //else angleDifference = (360 + (self.curTimeAngle - self.angle)) ;
-    numCycles = angleDifference / 22.5;
+    CGContextDrawPath(ctx, kCGPathStroke);
+
+
+    CGContextSetBlendMode(ctx, kCGBlendModeNormal);
+    int angleDifference = (- self.curTimeAngle + self.angle);
+    if (angleDifference < 0) angleDifference = 360 - (self.curTimeAngle - self.angle);
+    int numCycles = angleDifference / 45;
     [times removeAllObjects];
+  //  [table reloadData];
     for (int i = 0; i< numCycles; i++){
-        //float opacity = ((numCycles * 25) %25)/25;
-        float opacity = 1;
-       // if (i == numCycles && i != 0) opacity = (self.angle - 22.5*(i+1) + self.curTimeAngle)/25.0;
-    //    NSLog(@"hello%f", (abs(angleDifference%25)/25.0));
+        float cycleAngle = fmodf((self.angle - 45*(i+1) + 360), 360);
+
+           float opacity = 1;
         if (i < 2) [[[UIColor redColor] colorWithAlphaComponent:opacity] set];
-        else if (i < 5) [[[UIColor yellowColor]colorWithAlphaComponent:opacity] set];
+        else if (i < 4) [[[UIColor yellowColor]colorWithAlphaComponent:opacity] set];
         else [[[UIColor greenColor]colorWithAlphaComponent:opacity] set];
 
-      //  CGPoint cycleCenter = [self pointFromAngle: self.angle + 22.5*(i+1)];
-    //    NSLog(@"numCycles %f, %f", self.frame.size.width/2, self.frame.size.height/2);
 
-        //CGContextAddArc(ctx, self.frame.size.width/2, self.frame.size.height/2, radius, ToRad(405 - self.angle - 45*(i+1)), ToRad(405 - self.angle - 45*(i+2)), 1);
-//        CGContextAddArc(ctx, self.frame.size.width/2, self.frame.size.height/2, radius, ToRad(360 - self.angle - 45*(i+1)),ToRad(360 - self.angle - 45*(i)), 0);
-        CGContextAddArc(ctx, self.frame.size.width/2, self.frame.size.height/2, radius, ToRad(360 - self.angle - 22.5*(i+1)+0.5),ToRad(360 - self.angle - 22.5*(i+1)), 1);
-
-        NSString *aTime = [NSString stringWithFormat:@"%d", [self radToHour:ToRad(self.angle - 22.5*(i+1))]];
-        [times addObject:aTime];
+        CGContextSetBlendMode(ctx, kCGBlendModeNormal);
+        CGContextSetLineWidth(ctx, 10);//-20);
         CGContextSetLineCap(ctx, kCGLineCapButt);
-        [UIView animateWithDuration:0.6f delay:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
-            CGContextDrawPath(ctx, kCGPathStroke);
-        } completion:nil];
+        CGContextAddArc(ctx, self.frame.size.width/2, self.frame.size.height/2, radius-15, ToRad(cycleAngle+0.5-90),ToRad(cycleAngle-0.5-90), 1);
+        CGContextDrawPath(ctx, kCGPathStroke);
+
+        CGContextSetLineWidth(ctx, 3);//-20);
+        CGContextSetLineCap(ctx, kCGLineCapRound);
+        CGContextAddArc(ctx, self.frame.size.width/2, self.frame.size.height/2, radius, ToRad(cycleAngle+0.5-90),ToRad(cycleAngle-0.5-90), 1);
+        CGContextDrawPath(ctx, kCGPathStroke);
+
+        NSString *cycleTime = [NSString stringWithFormat:@"%02d:%02d",
+                           (int)(cycleAngle/30),
+                           (int)(fmodf(cycleAngle, 30.0)/0.5)];
+        [times addObject:cycleTime];
+   //     NSLog(@"%@", times);
+
+        [[UIColor whiteColor]setStroke];
+        CGContextSetLineWidth(ctx, 15);//-20);
+     //   CGContextSetBlendMode(ctx, kCGBlendModeDifference);
+
+        CGContextSetLineCap(ctx, kCGLineCapRound);
+        //   CGContextSetLineWidth(ctx, 3);
+        CGContextAddArc(ctx, self.frame.size.width/2, self.frame.size.height/2, radius, ToRad(self.curTimeAngle -90+0.5),ToRad(self.curTimeAngle-90), 1);
+
+        CGContextDrawPath(ctx, kCGPathStroke);
+
+
+
 
 
         //       CGContextFillEllipseInRect(ctx, CGRectMake(cycleCenter.x, cycleCenter.y, TB_LINE_WIDTH, TB_LINE_WIDTH));
     }
-    CGContextAddArc(ctx, self.frame.size.width/2, self.frame.size.height/2, radius, ToRad(360 - self.angle+0.5),ToRad(360 - self.angle), 1);
-
-    CGContextDrawPath(ctx, kCGPathStroke);
-
     //Draw It!
- //   CGContextFillEllipseInRect(ctx, CGRectMake(curTimeCenter.x, curTimeCenter.y, TB_LINE_WIDTH, TB_LINE_WIDTH));
 
     [[UIColor colorWithRed:255 green:255 blue:255 alpha:1]set];
-    CGContextFillEllipseInRect(ctx, CGRectMake(handleCenter.x, handleCenter.y, TB_LINE_WIDTH, TB_LINE_WIDTH));
-  //  CGContextFillEllipseInRect(ctx, CGRectMake(handleCenter.x+15, handleCenter.y+15, TB_LINE_WIDTH-30, TB_LINE_WIDTH-30));
-    CGContextFillEllipseInRect(ctx, CGRectMake(handleCenter.x + TB_LINE_WIDTH/4, handleCenter.y + TB_LINE_WIDTH/4, TB_LINE_WIDTH/2, TB_LINE_WIDTH/2));
+    CGContextFillEllipseInRect(ctx, CGRectMake(hourHandleCenter.x, hourHandleCenter.y, TB_LINE_WIDTH, TB_LINE_WIDTH));
 
-    knobLocation = CGRectMake(handleCenter.x, handleCenter.y , TB_LINE_WIDTH, TB_LINE_WIDTH);
+    NSString *sleepDuration = [NSString stringWithFormat:@"%dh", (12+(int)(self.angle/30)-(int)(self.curTimeAngle/30))%12];
+    if (![sleepDuration isEqualToString:@"0h"])
+    [sleepDuration drawAtPoint:CGPointMake(hourHandleCenter.x+11, hourHandleCenter.y+10) withAttributes:@{NSFontAttributeName: [UIFont boldSystemFontOfSize:16], NSForegroundColorAttributeName:[UIColor blackColor]}];
 
+    knobLocation = CGRectMake(hourHandleCenter.x, hourHandleCenter.y , TB_LINE_WIDTH, TB_LINE_WIDTH);
 
     CGContextRestoreGState(ctx);
 
@@ -376,31 +410,57 @@ static inline float timeToAngle (int h, int m){
 
 /** Move the Handle **/
 -(BOOL)movehandle:(CGPoint)lastPoint{
-    
+    BOOL isClockwise = NO, hasTransitioned = NO;
     //Get the center
     CGPoint centerPoint = CGPointMake(self.frame.size.width/2, self.frame.size.height/2);
     
     //Calculate the direction from a center point and a arbitrary position.
     float delta = AngleFromNorth(centerPoint, lastPoint, YES);
-    int hsel = (int)floor(delta/30.0);
-    int msel = (int)floor(fmodf(delta,30.0)*2.0);
-    int hcur = (int)floor(self.curTimeAngle/30.0);
-    int ninehlater = (hcur + 9)%12;
-    int mcur = (int)floor(fmodf(self.curTimeAngle,30.0)*2.0);
-    NSLog(@"XX%02d:%02d %02d:%02d", hcur, mcur, hsel, mcur);
-    if ((delta >= self.curTimeAngle && delta <= 360) || delta < fmodf(self.curTimeAngle + 270,360))
+    if (delta > self.angle) isClockwise = YES;
+    else isClockwise = NO;
+    int animThreshold = 77;
+    float diff = self.curTimeAngle - self.angle;
+    if (diff > 0 && diff <= animThreshold && self.curTimeAngle - delta > animThreshold){
+        // the touch tracking has skipped a transition because we moved fingers fast
+        secondaryDialAlpha = 0;
+        secondaryRadius = 70;
+        radius = 100;
+   //     hasTransitioned = NO;
+    } else if (diff > 0 && self.curTimeAngle - delta < 0 && secondaryRadius > 70){
+        secondaryDialAlpha = 1;
+        secondaryRadius = 100;
+        radius = 130;
+     //   hasTransitioned = YES;
+    }
+
     self.angle = delta;
 
-
-    _textField.text =  [NSString stringWithFormat:@"%02d:%02d", (int)floor(self.angle/30.0),(int)floor(self.secondaryAngle/6)];
+    _curTime.font = [UIFont fontWithName:TB_FONTFAMILY size:50];
+    _curTime.text =  [NSString stringWithFormat:@"%02d:%02d", (int)floor(self.angle/30.0),(int)(fmodf(self.angle,30.0)/0.5)];
 
     handleAngle = self.angle;
-    //    self.angle = ceil(self.angle/45)*45;
-    //Redraw
     [self setNeedsDisplay];
 
-    if (self.angle == delta) return YES;
-    else return NO;
+    diff = self.curTimeAngle - self.angle;
+    if(diff <= animThreshold && diff > 0){
+        NSLog(@"curTime %f angle %f diff %f", self.curTimeAngle, self.angle, diff/animThreshold);
+        NSLog(@"radius %d", radius);
+
+        if (isClockwise&& radius!=130){
+            NSLog(@"radius %d", radius);
+            secondaryDialAlpha = 1 - diff/animThreshold;
+            secondaryRadius = secondaryRadius + secondaryDialAlpha*(100 - secondaryRadius);
+            radius = radius + secondaryDialAlpha*(130-radius);
+        } else if (!isClockwise){
+            secondaryDialAlpha = 1 - diff/animThreshold;
+            NSLog(@"radius %d secondary %f", secondaryRadius, (secondaryRadius - 70));
+            secondaryRadius = secondaryRadius - (1 - secondaryDialAlpha)*(secondaryRadius - 70);
+            radius = radius - (1 - secondaryDialAlpha)*(radius - 100);
+        }
+    }
+
+
+    return YES;
 }
 
 -(void)moveSecondaryDial:(CGPoint)lastPoint{
@@ -428,17 +488,49 @@ static inline float timeToAngle (int h, int m){
     
     //The point position on the circumference
     CGPoint result;
-    NSLog(@"%d", angleInt);
-    result.y = round(centerPoint.y + handleradius * sin(ToRad(angleInt-90))) ;
-    result.x = round(centerPoint.x + handleradius * cos(ToRad(angleInt-90)));
+     result.y = round(centerPoint.y + radius * sin(ToRad(angleInt-90))) ;
+    result.x = round(centerPoint.x + radius * cos(ToRad(angleInt-90)));
     return result;
 }
 
-//Sourcecode from Apple example clockControl 
+-(CGPoint)pointFromAngleFixedRadius:(int)angleInt{
+
+    //Circle center
+    CGPoint centerPoint = CGPointMake(self.frame.size.width/2 - TB_LINE_WIDTH/2, self.frame.size.height/2 - TB_LINE_WIDTH/2);
+
+    //The point position on the circumference
+    CGPoint result;
+    result.y = round(centerPoint.y + 100 * sin(ToRad(angleInt-90))) ;
+    result.x = round(centerPoint.x + 100 * cos(ToRad(angleInt-90)));
+    return result;
+}
+
+
+-(CGPoint)pointFromAngleAroundDial:(int)angleInt{
+
+    //Circle center
+    CGPoint centerPoint = CGPointMake(self.frame.size.width/2 - TB_LINE_WIDTH/2, self.frame.size.height/2 - TB_LINE_WIDTH/2);
+
+    //The point position on the circumference
+    CGPoint result;
+    result.y = round(centerPoint.y + radius * sin(ToRad(angleInt-90))) ;
+    result.x = round(centerPoint.x + radius * cos(ToRad(angleInt-90)));
+
+
+    result.y +=10; result.x +=16;
+    result.x += 15*cos(ToRad(angleInt-90)); result.y +=15*sin(ToRad(angleInt-90));
+
+    return result;
+}
+
+
+
+//Sourcecode from Apple example clockControl
 //Calculate the direction in degrees from a center point to an arbitrary position.
 static inline float AngleFromNorth(CGPoint p1, CGPoint p2, BOOL flipped) {
     CGPoint v = CGPointMake(p2.x-p1.x,p2.y-p1.y);
     float vmag = sqrt(SQR(v.x) + SQR(v.y)), result = 0;
+   // vmag = 10000000;
     v.x /= vmag;
     v.y /= vmag;
     float radians = atan2f(v.y,v.x);
