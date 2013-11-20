@@ -23,11 +23,16 @@
 @interface TBCircularSlider(){
     UITextField *_textField;
     UITextField *_curTime;
-    int radius;
+    float radius;
     int secondaryRadius;
+    BOOL secondaryDialMode;
+    BOOL shouldShowSecondaryDial;
     float handleAngle;
     float mainDialAlpha;
+    float secondaryRadiusDiff;
     float secondaryDialAlpha;
+    float tetriaryRadiusDiff;
+    float tetriaryDialAlpha;
     CGRect knobLocation;
     NSCalendar *cal;
     NSDate* now;
@@ -47,6 +52,9 @@
     self = [super initWithFrame:frame];
     
     if(self){
+
+        secondaryDialMode = NO;
+        shouldShowSecondaryDial = NO;
         cal = [NSCalendar currentCalendar];
         now = [NSDate date];
         int h = [[cal components:NSHourCalendarUnit fromDate:now] hour];
@@ -60,8 +68,11 @@
         //Define the circle radius taking into account the safe area
         radius =  self.frame.size.width/2 - TB_SAFEAREA_PADDING;
         secondaryRadius = 70;
+        secondaryRadiusDiff = 0;
         mainDialAlpha = 1.0;
+        tetriaryRadiusDiff = 0;
         secondaryDialAlpha = 0;
+        tetriaryDialAlpha = 0;
         //Initialize the Angle at 0
         self.angle = self.curTimeAngle;
         handleAngle = self.angle;
@@ -150,105 +161,51 @@
     int m = [[cal components:NSMinuteCalendarUnit fromDate:now] minute];
     if (h > 12) h -= 12;
     self.curTimeAngle = timeToAngle(h, m);
+
     CGContextRef ctx = UIGraphicsGetCurrentContext();
-//    CGContextSetBlendMode(ctx, kCGBlendModeDifference);
-
-/** Draw the Background **/
-
-    //Create the path
-    CGContextSetLineCap(ctx, kCGLineCapButt);
-
-    CGContextAddArc(ctx, self.frame.size.width/2, self.frame.size.height/2, radius, ToRad(self.curTimeAngle - 90+3),ToRad(self.curTimeAngle - 90) + ToRad(285), 0);
-   // CGContextAddQuadCurveToPoint(ctx,[self pointFromAngle:self.an], self.frame.size.height/2, self.frame.size.width, self.frame.size.height);
-    //Set the stroke color to black
-    [[UIColor purpleColor]setStroke];
-    [[UIColor colorWithWhite:1.0 alpha:mainDialAlpha]setStroke];
-    //Define line width and cap
-   // CGContextSetLineWidth(ctx, TB_BACKGROUND_WIDTH);
-
-    CGContextSetLineWidth(ctx, 3);
-
-    CGContextSetLineCap(ctx, kCGLineCapRound);
-
-    //draw it!
-    CGContextDrawPath(ctx, kCGPathStroke);
-
-    CGContextSetLineCap(ctx, kCGLineCapButt);
-
-    CGContextAddArc(ctx, self.frame.size.width/2, self.frame.size.height/2, radius, ToRad(self.curTimeAngle - 90),ToRad(self.curTimeAngle - 90) + ToRad(3), 0);
-
-    CGContextDrawPath(ctx, kCGPathStroke);
-    
-    CGPoint p = [self pointFromAngle:self.angle];
-    p.y +=9; p.x +=6;
-    p.x += 40*cos(ToRad(self.angle-90)); p.y +=40*sin(ToRad(self.angle-90));
-//    [@"curt" drawAtPoint:p withAttributes:@{NSFontAttributeName: [UIFont systemFontOfSize:16], NSForegroundColorAttributeName:[UIColor greenColor]}];
-
-
-    [@"12" drawAtPoint:[self pointFromAngleAroundDial:0] withAttributes:@{NSFontAttributeName: [UIFont systemFontOfSize:16], NSForegroundColorAttributeName:[UIColor whiteColor]}];
-    [@"3" drawAtPoint:[self pointFromAngleAroundDial:90] withAttributes:@{NSFontAttributeName: [UIFont systemFontOfSize:16], NSForegroundColorAttributeName:[UIColor whiteColor]}];
-    [@"6" drawAtPoint:[self pointFromAngleAroundDial:180] withAttributes:@{NSFontAttributeName: [UIFont systemFontOfSize:16], NSForegroundColorAttributeName:[UIColor whiteColor]}];
-    [@"9" drawAtPoint:[self pointFromAngleAroundDial:270] withAttributes:@{NSFontAttributeName: [UIFont systemFontOfSize:16], NSForegroundColorAttributeName:[UIColor whiteColor]}];
-
-    //CGContextAddArc(ctx, self.frame.size.width/2, self.frame.size.height/2, secondaryRadius, ToRad(0),ToRad(360), 0);
-
-    [[UIColor colorWithWhite:1.0 alpha:secondaryDialAlpha]setStroke];
-    CGContextSetLineWidth(ctx, 2);
-    CGContextDrawPath(ctx, kCGPathStroke);
-
-    CGContextSetBlendMode(ctx, kCGBlendModeDifference);
-
+    [self drawOuterDial:ctx];
+if (secondaryDialMode)    [self drawInnerDial:ctx];
     [self drawTheHandle:ctx];
-
-    //Define line width and cap
-    CGContextSetLineWidth(ctx, 3);//-20);
-    CGContextSetLineCap(ctx, kCGLineCapRound);
-    CGContextAddArc(ctx, self.frame.size.width/2, self.frame.size.height/2,secondaryRadius, ToRad(0), ToRad(360),0);
-
-    //draw it!
-    CGContextDrawPath(ctx, kCGPathStroke);
-
-   
 }
 
 static inline float timeToAngle (int h, int m){
     return h*30 + m*0.5;
 }
 
-
--(int) radToHour:(int) angle{
-    return ToDeg(angle)/30;
-}
-
--(int) radToMin:(int) angle{
-    angle = ToDeg(angle);
-    if (angle < 90) return 3 - angle % 30;
-    return angle%30;
-}
-
 /** Draw a white knob over the circle **/
 -(void) drawTheHandle:(CGContextRef)ctx{
-    
-    CGContextSaveGState(ctx);
 
-    if (radius <130&& self.curTimeAngle > self.angle){
-        radius++;
-        double delayInSeconds = 0.1;
-        dispatch_time_t popTime =
-        dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
-        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-            [self performSelector:@selector(setNeedsDisplay) withObject:nil];
-        });
+    CGContextSaveGState(ctx);
+    if (secondaryDialMode){
+        if (radius <130 && shouldShowSecondaryDial){
+            radius++;
+            if (secondaryRadius <100) secondaryRadius++;
+            if (secondaryDialAlpha < 1) secondaryDialAlpha += 0.1;
+            double delayInSeconds = 0.001;
+            dispatch_time_t popTime =
+            dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+            dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                [self performSelector:@selector(setNeedsDisplay) withObject:nil];
+            });
+        } else if (radius <= 130 && radius > 100 && ! shouldShowSecondaryDial) {
+            radius--;
+            if (secondaryRadius >70) secondaryRadius--;
+            if (secondaryDialAlpha > 0) secondaryDialAlpha -= 0.1;
+            double delayInSeconds = 0.001;
+            dispatch_time_t popTime =
+            dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
+            dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+                [self performSelector:@selector(setNeedsDisplay) withObject:nil];
+            });
+        }
     }
     //I Love shadows
   //  CGContextSetShadowWithColor(ctx, CGSizeMake(0, 0), 3, [UIColor blackColor].CGColor);
-    
+
     //Get the handle position
-    CGPoint hourHandleCenter =  [self pointFromAngleFixedRadius: handleAngle];
+    CGPoint hourHandleCenter =  [self pointFromAngle:handleAngle withRadius:radius - secondaryRadiusDiff - tetriaryRadiusDiff atCenter:CGPointMake(self.frame.size.width/2 - TB_LINE_WIDTH/2, self.frame.size.height/2  + secondaryRadiusDiff - tetriaryRadiusDiff - TB_LINE_WIDTH/2)];
     CGPoint minHandleCenter =  [self pointFromAngle: handleAngle];
 
-  //  NSLog(@"handle %d", self.curTimeAngle);
- //   CGPoint curTimeCenter =  [self pointFromAngle: self.curTimeAngle];
     CGContextSetBlendMode(ctx, kCGBlendModeDifference);
     CGContextSetLineWidth(ctx, radius-3);//-20);
     [[UIColor whiteColor]setStroke];
@@ -287,23 +244,13 @@ static inline float timeToAngle (int h, int m){
                            (int)(cycleAngle/30),
                            (int)(fmodf(cycleAngle, 30.0)/0.5)];
         [times addObject:cycleTime];
-   //     NSLog(@"%@", times);
 
         [[UIColor whiteColor]setStroke];
-        CGContextSetLineWidth(ctx, 15);//-20);
-     //   CGContextSetBlendMode(ctx, kCGBlendModeDifference);
-
+        CGContextSetLineWidth(ctx, 15);
         CGContextSetLineCap(ctx, kCGLineCapRound);
-        //   CGContextSetLineWidth(ctx, 3);
         CGContextAddArc(ctx, self.frame.size.width/2, self.frame.size.height/2, radius, ToRad(self.curTimeAngle -90+0.5),ToRad(self.curTimeAngle-90), 1);
-
         CGContextDrawPath(ctx, kCGPathStroke);
 
-
-
-
-
-        //       CGContextFillEllipseInRect(ctx, CGRectMake(cycleCenter.x, cycleCenter.y, TB_LINE_WIDTH, TB_LINE_WIDTH));
     }
     //Draw It!
 
@@ -329,7 +276,7 @@ static inline float timeToAngle (int h, int m){
     BOOL isClockwise = NO, hasTransitioned = NO;
     //Get the center
     CGPoint centerPoint = CGPointMake(self.frame.size.width/2, self.frame.size.height/2);
-    int animt = 10;
+    int animt = 180;
     //Calculate the direction from a center point and a arbitrary position.
     float delta = AngleFromNorth(centerPoint, lastPoint, YES);
     if (delta > self.angle) isClockwise = YES;
@@ -339,15 +286,16 @@ static inline float timeToAngle (int h, int m){
         // the touch tracking has skipped a transition because we moved fingers fast
         secondaryDialAlpha = 0;
         secondaryRadius = 70;
-        radius = 100;
+       // radius = 100;
    //     hasTransitioned = NO;
     } else if (diff > 0 && self.curTimeAngle - delta < 0 && secondaryRadius > 70){
-        secondaryDialAlpha = 1;
-        secondaryRadius = 100;
-        radius = 130;
+    //    secondaryDialAlpha = 1;
+      //  secondaryRadius = 100;
+        //radius = 130;
      //   hasTransitioned = YES;
     }
-
+    if (isClockwise) radius += 0.05;
+    else radius -= 0.05;
     self.angle = delta;
 
     _curTime.font = [UIFont fontWithName:TB_FONTFAMILY size:50];
@@ -356,22 +304,56 @@ static inline float timeToAngle (int h, int m){
     handleAngle = self.angle;
     [self setNeedsDisplay];
 
-    diff = self.curTimeAngle - self.angle;
+  //  if (fmodf((self.angle + animt),360) <= animt)
+
+        diff = fmodf((self.angle + animt),360);
+        //self.curTimeAngle - self.angle;
     if(diff <= animt && diff > 0){
         NSLog(@"curTime %f angle %f diff %f", self.curTimeAngle, self.angle, diff/10);
         NSLog(@"radius %d", radius);
 
         if (isClockwise&& radius!=130){
             NSLog(@"radius %d", radius);
-            secondaryDialAlpha = 1 - diff/animt;
-            secondaryRadius = secondaryRadius + secondaryDialAlpha*(100 - secondaryRadius);
-            radius = radius + secondaryDialAlpha*(130-radius);
+            if (!secondaryDialMode){
+                secondaryDialAlpha = diff/animt;
+                secondaryRadiusDiff = secondaryDialAlpha*(15);
+                //radius = radius + secondaryDialAlpha*(130-radius);
+            } else {
+                shouldShowSecondaryDial = YES;
+            }
         } else if (!isClockwise){
-            secondaryDialAlpha = 1 - diff/animt;
-            NSLog(@"radius %d secondary %d", secondaryRadius, (secondaryRadius - 70));
-            secondaryRadius = secondaryRadius - (1 - secondaryDialAlpha)*(secondaryRadius - 70);
-            radius = radius - (1 - secondaryDialAlpha)*(radius - 100);
+            if (!secondaryDialMode){
+                secondaryDialAlpha = diff/animt;
+                NSLog(@"radius %d secondary %d", secondaryRadius, (secondaryRadius - 70));
+                secondaryRadiusDiff = (secondaryDialAlpha)*(15);
+                //radius = radius - (1 - secondaryDialAlpha)*(radius - 100);
+            } else {
+                shouldShowSecondaryDial = NO;
+            }
         }
+    } else if (diff > animt && secondaryRadiusDiff > 0) {
+        if (isClockwise&& radius!=130){
+            NSLog(@"radius %d", radius);
+            if (!secondaryDialMode){
+                tetriaryDialAlpha = (diff-animt)/animt;
+                tetriaryRadiusDiff = tetriaryDialAlpha*(15);
+                NSLog(@"tetriaryRadiusDiff %f", tetriaryRadiusDiff);
+
+                //radius = radius + secondaryDialAlpha*(130-radius);
+            } else {
+                shouldShowSecondaryDial = YES;
+            }
+        } else if (!isClockwise){
+            if (!secondaryDialMode){
+                tetriaryDialAlpha = (diff-animt)/animt;
+                NSLog(@"radius %d secondary %d", secondaryRadius, (secondaryRadius - 70));
+                tetriaryRadiusDiff = (tetriaryDialAlpha)*(15);
+                //radius = radius - (1 - secondaryDialAlpha)*(radius - 100);
+            } else {
+                shouldShowSecondaryDial = NO;
+            }
+        }
+
     }
 
 
@@ -407,6 +389,19 @@ static inline float timeToAngle (int h, int m){
     result.x = round(centerPoint.x + radius * cos(ToRad(angleInt-90)));
     return result;
 }
+
+-(CGPoint)pointFromAngle:(int)angleInt withRadius:(float)r atCenter:(CGPoint)centerPoint{
+
+    //Circle center
+  //  CGPoint centerPoint = CGPointMake(self.frame.size.width/2 - TB_LINE_WIDTH/2, self.frame.size.height/2 - TB_LINE_WIDTH/2);
+
+    //The point position on the circumference
+    CGPoint result;
+    result.y = round(centerPoint.y + r * sin(ToRad(angleInt-90))) ;
+    result.x = round(centerPoint.x + r * cos(ToRad(angleInt-90)));
+    return result;
+}
+
 
 -(CGPoint)pointFromAngleFixedRadius:(int)angleInt{
 
@@ -454,6 +449,75 @@ static inline float AngleFromNorth(CGPoint p1, CGPoint p2, BOOL flipped) {
     if (result <0) result += 360;
     return result;
 }
+
+- (void) drawOuterDial:(CGContextRef) ctx {
+    if (secondaryDialMode) {
+        CGContextAddArc(ctx,
+                        self.frame.size.width/2,
+                        self.frame.size.height/2,
+                        radius,
+                        ToRad(self.curTimeAngle - 90+3),
+                        ToRad(self.curTimeAngle - 90) + ToRad(270), 0);
+        [[UIColor colorWithWhite:1.0 alpha:mainDialAlpha] setStroke];
+        CGContextSetLineWidth(ctx, 3);
+        CGContextSetLineCap(ctx, kCGLineCapRound);
+        CGContextDrawPath(ctx, kCGPathStroke);
+    } else {
+        float halfCircleAngle = 180;
+//        if (self.curTimeAngle < 180)
+  //        halfCircleAngle = self.curTimeAngle + 360 - fmodf(self.curTimeAngle, 180);
+    //    else halfCircleAngle = 180 - self.curTimeAngle;
+        CGContextSetLineWidth(ctx, 3);
+        CGContextSetLineCap(ctx, kCGLineCapRound);
+        [[UIColor whiteColor] setStroke];
+
+        CGContextAddArc(ctx,
+                        self.frame.size.width/2,
+                        self.frame.size.height/2,
+                        radius,
+                        ToRad(self.curTimeAngle - 90),
+                        ToRad(halfCircleAngle - 90), 0);
+     //   [[UIColor redColor] setStroke];
+        CGContextDrawPath(ctx, kCGPathStroke);
+
+        CGContextAddArc(ctx,
+                        self.frame.size.width/2,
+                        self.frame.size.height/2 + secondaryRadiusDiff,
+                        radius - secondaryRadiusDiff,
+                        ToRad(halfCircleAngle - 90),
+                        ToRad(halfCircleAngle + 180 - 90), 0);
+       // [[UIColor yellowColor] setStroke];
+        CGContextDrawPath(ctx, kCGPathStroke);
+
+        CGContextAddArc(ctx,
+                        self.frame.size.width/2,
+                        self.frame.size.height/2 + secondaryRadiusDiff - tetriaryRadiusDiff,
+                        radius - secondaryRadiusDiff - tetriaryRadiusDiff,
+                        ToRad(halfCircleAngle + 180 - 90),
+                        ToRad(halfCircleAngle + 360 - 90), 0);
+       // [[UIColor colorWithWhite:1.0 alpha:mainDialAlpha] setStroke];
+        //r[[UIColor greenColor] setStroke];
+        CGContextDrawPath(ctx, kCGPathStroke);
+    }
+
+    [@"12" drawAtPoint:[self pointFromAngleAroundDial:0] withAttributes:@{NSFontAttributeName: [UIFont systemFontOfSize:16], NSForegroundColorAttributeName:[UIColor whiteColor]}];
+    [@"3" drawAtPoint:[self pointFromAngleAroundDial:90] withAttributes:@{NSFontAttributeName: [UIFont systemFontOfSize:16], NSForegroundColorAttributeName:[UIColor whiteColor]}];
+    [@"6" drawAtPoint:[self pointFromAngleAroundDial:180] withAttributes:@{NSFontAttributeName: [UIFont systemFontOfSize:16], NSForegroundColorAttributeName:[UIColor whiteColor]}];
+    [@"9" drawAtPoint:[self pointFromAngleAroundDial:270] withAttributes:@{NSFontAttributeName: [UIFont systemFontOfSize:16], NSForegroundColorAttributeName:[UIColor whiteColor]}];
+}
+
+- (void) drawInnerDial:(CGContextRef) ctx {
+    CGContextAddArc(ctx,
+                    self.frame.size.width/2,
+                    self.frame.size.height/2,
+                    secondaryRadius,
+                    ToRad(0), ToRad(360), 0);
+    [[UIColor colorWithWhite:1.0 alpha:secondaryDialAlpha] setStroke];
+    CGContextSetLineWidth(ctx, 3);
+    CGContextSetLineCap(ctx, kCGLineCapRound);
+    CGContextDrawPath(ctx, kCGPathStroke);
+}
+
 @end
 
 
