@@ -203,7 +203,9 @@ static inline float timeToAngle (int h, int m){
   //  CGContextSetShadowWithColor(ctx, CGSizeMake(0, 0), 3, [UIColor blackColor].CGColor);
 
     //Get the handle position
-    CGPoint hourHandleCenter =  [self pointFromAngle:handleAngle withRadius:radius - secondaryRadiusDiff - tetriaryRadiusDiff atCenter:CGPointMake(self.frame.size.width/2 - TB_LINE_WIDTH/2, self.frame.size.height/2  + secondaryRadiusDiff - tetriaryRadiusDiff - TB_LINE_WIDTH/2)];
+    int Nudge = 1;
+    if (self.curTimeAngle > 180) Nudge = -1;
+    CGPoint hourHandleCenter =  [self pointFromAngle:handleAngle withRadius:radius - secondaryRadiusDiff - tetriaryRadiusDiff atCenter:CGPointMake(self.frame.size.width/2 - TB_LINE_WIDTH/2, self.frame.size.height/2  + Nudge *(secondaryRadiusDiff - tetriaryRadiusDiff) - TB_LINE_WIDTH/2)];
     CGPoint minHandleCenter =  [self pointFromAngle: handleAngle];
 
     CGContextSetBlendMode(ctx, kCGBlendModeDifference);
@@ -228,16 +230,19 @@ static inline float timeToAngle (int h, int m){
         else if (i < 4) [[[UIColor yellowColor]colorWithAlphaComponent:opacity] set];
         else [[[UIColor greenColor]colorWithAlphaComponent:opacity] set];
 
+        int Nudge = 1;
+        if (self.curTimeAngle > 180) Nudge = -1;
+        CGPoint hourHandleCenter =  [self pointFromAngle:handleAngle withRadius:radius - secondaryRadiusDiff - tetriaryRadiusDiff atCenter:CGPointMake(self.frame.size.width/2 - TB_LINE_WIDTH/2, self.frame.size.height/2  + Nudge *(secondaryRadiusDiff - tetriaryRadiusDiff) - TB_LINE_WIDTH/2)];
 
         CGContextSetBlendMode(ctx, kCGBlendModeNormal);
         CGContextSetLineWidth(ctx, 10);//-20);
         CGContextSetLineCap(ctx, kCGLineCapButt);
-        CGContextAddArc(ctx, self.frame.size.width/2, self.frame.size.height/2, radius-15, ToRad(cycleAngle+0.5-90),ToRad(cycleAngle-0.5-90), 1);
+        CGContextAddArc(ctx, self.frame.size.width/2, self.frame.size.height/2 + Nudge *(secondaryRadiusDiff - tetriaryRadiusDiff) , radius-15 - secondaryRadiusDiff - tetriaryRadiusDiff, ToRad(cycleAngle+0.5-90),ToRad(cycleAngle-0.5-90), 1);
         CGContextDrawPath(ctx, kCGPathStroke);
 
         CGContextSetLineWidth(ctx, 3);//-20);
         CGContextSetLineCap(ctx, kCGLineCapRound);
-        CGContextAddArc(ctx, self.frame.size.width/2, self.frame.size.height/2, radius, ToRad(cycleAngle+0.5-90),ToRad(cycleAngle-0.5-90), 1);
+        CGContextAddArc(ctx, self.frame.size.width/2, self.frame.size.height/2 + Nudge *(secondaryRadiusDiff - tetriaryRadiusDiff) , radius - secondaryRadiusDiff - tetriaryRadiusDiff, ToRad(cycleAngle+0.5-90),ToRad(cycleAngle-0.5-90), 1);
         CGContextDrawPath(ctx, kCGPathStroke);
 
         NSString *cycleTime = [NSString stringWithFormat:@"%02d:%02d",
@@ -306,7 +311,8 @@ static inline float timeToAngle (int h, int m){
 
   //  if (fmodf((self.angle + animt),360) <= animt)
 
-        diff = fmodf((self.angle + animt),360);
+      //  diff = fmodf((self.angle + animt + 180),360);
+    diff = self.angle;
         //self.curTimeAngle - self.angle;
     if(diff <= animt && diff > 0){
         NSLog(@"curTime %f angle %f diff %f", self.curTimeAngle, self.angle, diff/10);
@@ -463,40 +469,40 @@ static inline float AngleFromNorth(CGPoint p1, CGPoint p2, BOOL flipped) {
         CGContextSetLineCap(ctx, kCGLineCapRound);
         CGContextDrawPath(ctx, kCGPathStroke);
     } else {
-        float halfCircleAngle = 180;
+        float halfCircleAngle = fmodf((self.curTimeAngle + 180), 360);
 //        if (self.curTimeAngle < 180)
   //        halfCircleAngle = self.curTimeAngle + 360 - fmodf(self.curTimeAngle, 180);
     //    else halfCircleAngle = 180 - self.curTimeAngle;
         CGContextSetLineWidth(ctx, 3);
         CGContextSetLineCap(ctx, kCGLineCapRound);
         [[UIColor whiteColor] setStroke];
-
+        int nudgeDirection = 1;
+        if (self.curTimeAngle > 180) nudgeDirection = -1;
         CGContextAddArc(ctx,
                         self.frame.size.width/2,
                         self.frame.size.height/2,
                         radius,
                         ToRad(self.curTimeAngle - 90),
                         ToRad(halfCircleAngle - 90), 0);
-     //   [[UIColor redColor] setStroke];
+   //     [[UIColor redColor] setStroke];
         CGContextDrawPath(ctx, kCGPathStroke);
 
         CGContextAddArc(ctx,
                         self.frame.size.width/2,
-                        self.frame.size.height/2 + secondaryRadiusDiff,
+                        self.frame.size.height/2 + nudgeDirection * secondaryRadiusDiff,
                         radius - secondaryRadiusDiff,
                         ToRad(halfCircleAngle - 90),
                         ToRad(halfCircleAngle + 180 - 90), 0);
-       // [[UIColor yellowColor] setStroke];
+    //    [[UIColor yellowColor] setStroke];
         CGContextDrawPath(ctx, kCGPathStroke);
 
         CGContextAddArc(ctx,
                         self.frame.size.width/2,
-                        self.frame.size.height/2 + secondaryRadiusDiff - tetriaryRadiusDiff,
+                        self.frame.size.height/2 + nudgeDirection * (secondaryRadiusDiff - tetriaryRadiusDiff),
                         radius - secondaryRadiusDiff - tetriaryRadiusDiff,
                         ToRad(halfCircleAngle + 180 - 90),
                         ToRad(halfCircleAngle + 360 - 90), 0);
-       // [[UIColor colorWithWhite:1.0 alpha:mainDialAlpha] setStroke];
-        //r[[UIColor greenColor] setStroke];
+     //   [[UIColor greenColor] setStroke];
         CGContextDrawPath(ctx, kCGPathStroke);
     }
 

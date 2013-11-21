@@ -6,15 +6,15 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "No"
+            shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "z/TBCircularSlider.m"
-            timestampString = "406620510.026788"
+            timestampString = "406769319.2925"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "342"
-            endingLineNumber = "342"
+            startingLineNumber = "318"
+            endingLineNumber = "318"
             landmarkName = "-movehandle:"
             landmarkType = "5">
          </BreakpointContent>
@@ -26,11 +26,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "z/TBCircularSlider.m"
-            timestampString = "406620510.026788"
+            timestampString = "406769319.2925"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "299"
-            endingLineNumber = "299"
+            startingLineNumber = "321"
+            endingLineNumber = "321"
             landmarkName = "-movehandle:"
             landmarkType = "5">
          </BreakpointContent>
