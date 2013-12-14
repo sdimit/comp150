@@ -63,26 +63,20 @@
 
         float diff = cummulativeAngle;
 
-        if(diff >= 0 && diff < 180){
-            secondaryRadiusDiff = 0;
-        }
-        else if(diff >= 180 && diff < 360){
-            tetriaryRadiusDiff = 0;
-            secondaryDialAlpha = diff/180 - 1;
-            secondaryRadiusDiff = secondaryDialAlpha*(15);
+//        if(diff >= 0 && diff < 180){
+//        }
+//        else if(diff >= 180 && diff < 360){
+//            tetriaryRadiusDiff = 0;
+            secondaryDialAlpha = diff/3000;
+            //        float startSecondaryRadiusDiff = secondaryRadiusDiff;
+            //        float startTetriaryRadiusDiff = tetriaryRadiusDiff;
+            //        float startQuaternaryRadiusDiff = quaternaryRadiusDiff;
 
-        } else if (diff >= 360 && diff < 540) {
-            secondaryRadiusDiff = 15;
-            tetriaryDialAlpha = diff/180 - 2;
-            tetriaryRadiusDiff = tetriaryDialAlpha*(15);
+        secondaryRadiusDiff -= secondaryDialAlpha*(0 + secondaryRadiusDiff);
+        tetriaryRadiusDiff -= secondaryDialAlpha*(0 + tetriaryRadiusDiff);
+        quaternaryRadiusDiff -= secondaryDialAlpha*(0 + quaternaryRadiusDiff);
 
-
-        } else if (diff >= 540 && diff <= 720) {
-            tetriaryRadiusDiff = 15;
-            quaternaryDialAlpha = diff/180 - 3;
-            quaternaryRadiusDiff = quaternaryDialAlpha*(15);
-
-        }
+//        }
 
         dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, 0 * NSEC_PER_SEC);
         dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
@@ -256,12 +250,12 @@
         secondaryDialAlpha = diff/3000 ;
 
             //            secondaryDialAlpha = diff/720;
-        float startSecondaryRadiusDiff = secondaryRadiusDiff;
-        float startTetriaryRadiusDiff = tetriaryRadiusDiff;
-        float startQuaternaryRadiusDiff = quaternaryRadiusDiff;
-            secondaryRadiusDiff = secondaryDialAlpha*(15 - startSecondaryRadiusDiff) + startSecondaryRadiusDiff;
-            tetriaryRadiusDiff = secondaryDialAlpha*(15 - startTetriaryRadiusDiff) + startTetriaryRadiusDiff;
-            quaternaryRadiusDiff = secondaryDialAlpha*(15-startQuaternaryRadiusDiff) +startQuaternaryRadiusDiff;
+//        float startSecondaryRadiusDiff = secondaryRadiusDiff;
+//        float startTetriaryRadiusDiff = tetriaryRadiusDiff;
+//        float startQuaternaryRadiusDiff = quaternaryRadiusDiff;
+            secondaryRadiusDiff = secondaryDialAlpha*(15 - secondaryRadiusDiff) + secondaryRadiusDiff;
+            tetriaryRadiusDiff = secondaryDialAlpha*(15 - tetriaryRadiusDiff) + tetriaryRadiusDiff;
+            quaternaryRadiusDiff = secondaryDialAlpha*(15-quaternaryRadiusDiff) +quaternaryRadiusDiff;
 //        }
 
         dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
