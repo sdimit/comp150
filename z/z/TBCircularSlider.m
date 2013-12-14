@@ -58,26 +58,12 @@
     napsMode = isON;
     if (napsMode) storedCummulativeAngle = cummulativeAngle;
     else if (!napsMode && cummulativeAngle > storedCummulativeAngle) {
-
         cummulativeAngle-=10;
-
         float diff = cummulativeAngle;
-
-//        if(diff >= 0 && diff < 180){
-//        }
-//        else if(diff >= 180 && diff < 360){
-//            tetriaryRadiusDiff = 0;
-            secondaryDialAlpha = diff/3000;
-            //        float startSecondaryRadiusDiff = secondaryRadiusDiff;
-            //        float startTetriaryRadiusDiff = tetriaryRadiusDiff;
-            //        float startQuaternaryRadiusDiff = quaternaryRadiusDiff;
-
+        secondaryDialAlpha = diff/3000;
         secondaryRadiusDiff -= secondaryDialAlpha*(0 + secondaryRadiusDiff);
         tetriaryRadiusDiff -= secondaryDialAlpha*(0 + tetriaryRadiusDiff);
         quaternaryRadiusDiff -= secondaryDialAlpha*(0 + quaternaryRadiusDiff);
-
-//        }
-
         dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, 0 * NSEC_PER_SEC);
         dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
             [self performSelector:@selector(setNapMode:) withObject:NO];
@@ -107,9 +93,6 @@
         self.curTimeAngle = timeToAngle(h,m);
 
         self.opaque = NO;
-            //   self.backgroundColor = [UIColor clearColor];
-
-        //Define the circle radius taking into account the safe area
         radius =  120;//self.frame.size.width/2 - TB_SAFEAREA_PADDING + 20;
         dialAlpha = 0;
         secondaryRadius = 70;
@@ -120,19 +103,13 @@
         revolution = 0;
         secondaryDialAlpha = 0;
         tetriaryDialAlpha = 0;
-        //Initialize the Angle at 0
         self.angle = 0;
         handleAngle = self.curTimeAngle;
         
-        //Define the Font
         UIFont *font = [UIFont fontWithName:TB_FONTFAMILY size:17];
-        //Calculate font size needed to display 3 numbers
         NSString *str = @"drag dial to set alarm";
         CGSize fontSize = [str sizeWithFont:font];
 
-
-
-        //Using a TextField area we can easily modify the control to get user input from this field
         _curTime = [[UITextField alloc]initWithFrame:CGRectMake((frame.size.width  - fontSize.width) /2,
                                                                   (frame.size.height - fontSize.height*2) /2,
                                                                   fontSize.width,
@@ -141,24 +118,8 @@
         _curTime.textColor = [UIColor colorWithWhite:1 alpha:0.8];
         _curTime.textAlignment = NSTextAlignmentCenter;
         _curTime.font = font;
-            //    _curTime.text =@"drag dial to set alarm";
-        //_curTime.text =  [NSString stringWithFormat:@"%02d:%02d", 11, 59];
         _curTime.enabled = NO;
-
-
         fontSize = [str sizeWithFont:[UIFont fontWithName:@"HelveticaNeue-Light" size:60]];
-     /*   _textField = [[UITextField alloc]initWithFrame:CGRectMake((frame.size.width  - fontSize.width) /2,
-                                                                  -20,
-                                                                  fontSize.width,
-                                                                  fontSize.height)];
-        _textField.backgroundColor = [UIColor clearColor];
-        _textField.textColor = [UIColor colorWithWhite:1 alpha:0.8];
-        _textField.textAlignment = NSTextAlignmentCenter;
-        _textField.font = [UIFont fontWithName:TB_FONTFAMILY size:60];
-        _textField.text =  [NSString stringWithFormat:@"%02d:%02d", h, m];
-        _textField.enabled = NO;
-        
-        [self addSubview:_textField];*/
         [self addSubview:_curTime];
     }
 
@@ -178,7 +139,6 @@
 -(BOOL)continueTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event{
     [super continueTrackingWithTouch:touch withEvent:event];
 
-    //Get touch location
     CGPoint lastPoint = [touch locationInView:self];
     CGPoint centerPoint = CGPointMake(self.frame.size.width/2, self.frame.size.height/2);
 
@@ -193,11 +153,9 @@
 /** Track is finished **/
 -(void)endTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event{
     [super endTrackingWithTouch:touch withEvent:event];
-        // [table reloadData];
     NSIndexSet * sections = [NSIndexSet indexSetWithIndex:0];
     [table reloadSections:sections withRowAnimation:UITableViewRowAnimationAutomatic];
 }
-
 
 #pragma mark - Drawing Functions - 
 
@@ -242,17 +200,8 @@
             //dialAlpha += 0.1;
 
         float diff = cummulativeAngle;
-            //     if(diff >= 0 && diff < 180){
-            //        if (!isClockwise) secondaryRadiusDiff = 0;
-//        }
-//        else if(diff >= 180 && diff < 360){
-//            if (!isClockwise) tetriaryRadiusDiff = 0;
-        secondaryDialAlpha = diff/3000 ;
 
-            //            secondaryDialAlpha = diff/720;
-//        float startSecondaryRadiusDiff = secondaryRadiusDiff;
-//        float startTetriaryRadiusDiff = tetriaryRadiusDiff;
-//        float startQuaternaryRadiusDiff = quaternaryRadiusDiff;
+        secondaryDialAlpha = diff/3000 ;
             secondaryRadiusDiff = secondaryDialAlpha*(15 - secondaryRadiusDiff) + secondaryRadiusDiff;
             tetriaryRadiusDiff = secondaryDialAlpha*(15 - tetriaryRadiusDiff) + tetriaryRadiusDiff;
             quaternaryRadiusDiff = secondaryDialAlpha*(15-quaternaryRadiusDiff) +quaternaryRadiusDiff;
@@ -388,7 +337,7 @@ static inline float timeToAngle (int h, int m){
     CGPoint centerPoint = CGPointMake(self.frame.size.width/2, self.frame.size.height/2);
     //Calculate the direction from a center point and a arbitrary position.
     float handleCurAngle = AngleFromNorth(centerPoint, lastPoint, YES);
-    handleCurAngle = fmodf((handleCurAngle + self.curTimeAngle - 30), 360);
+    handleCurAngle = fmodf((handleCurAngle + self.curTimeAngle), 360);
     float delta = fmodf((360 + handleCurAngle - self.angle), 360);
         //  cummulativeAngle = handleCurAngle;
     if (self.angle < 180 &&
