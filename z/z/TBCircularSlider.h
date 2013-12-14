@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "MainViewController.h";
 
 /** Parameters **/
 #define TB_SLIDER_SIZE 320                          //The width and the heigth of the slider
@@ -21,5 +22,7 @@
 @property (nonatomic,assign) float curTimeAngle;
 @property (nonatomic,assign) NSMutableArray* times;
 @property (nonatomic,assign) UITableView* table;
+@property (nonatomic,assign) MainViewController* parentViewController;
+-(void)setNapMode:(BOOL) isON;
 
 @end
