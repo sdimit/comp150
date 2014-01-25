@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>1A4156E8-F88D-4E8B-B106-39C3CFEDA80F</string>
+	<key>IDESourceControlProjectName</key>
+	<string>z</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>E5DBB4FC-CE33-4BDE-914B-4F5566A68213</key>
+		<string>https://github.com/sdimit/COMP150.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>z/z.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>E5DBB4FC-CE33-4BDE-914B-4F5566A68213</key>
+		<string>../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/sdimit/COMP150.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>E5DBB4FC-CE33-4BDE-914B-4F5566A68213</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>E5DBB4FC-CE33-4BDE-914B-4F5566A68213</string>
+			<key>IDESourceControlWCCName</key>
+			<string>comp150</string>
+		</dict>
+	</array>
+</dict>
+</plist>
